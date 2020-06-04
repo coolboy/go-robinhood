@@ -46,23 +46,33 @@ type OrderOpts struct {
 	Type          OrderType
 	Quantity      uint64
 	Price         float64
+	StopPrice     float64
 	TimeInForce   TimeInForce
 	ExtendedHours bool
 	Stop, Force   bool
+	Trigger       string
+	TrailingPeg   TrailingPeg
+}
+
+// TrailingPeg represents the trailing params
+type TrailingPeg struct {
+	Type       string `json:"type,omitempty"`       // can be Percentage or Price
+	Percentage int    `json:"percentage,omitempty"` // for now we just support percentage only
 }
 
 type apiOrder struct {
-	Account       string    `json:"account,omitempty"`
-	Instrument    string    `json:"instrument,omitempty"`
-	Symbol        string    `json:"symbol,omitempty"`
-	Type          string    `json:"type,omitempty"`
-	TimeInForce   string    `json:"time_in_force,omitempty"`
-	Trigger       string    `json:"trigger,omitempty"`
-	Price         float64   `json:"price,omitempty"`
-	StopPrice     float64   `json:"stop_price,omitempty"`
-	Quantity      uint64    `json:"quantity,omitempty"`
-	Side          OrderSide `json:"side,omitempty"`
-	ExtendedHours bool      `json:"extended_hours,omitempty"`
+	Account       string      `json:"account,omitempty"`
+	Instrument    string      `json:"instrument,omitempty"`
+	Symbol        string      `json:"symbol,omitempty"`
+	Type          string      `json:"type,omitempty"`
+	TimeInForce   string      `json:"time_in_force,omitempty"`
+	Trigger       string      `json:"trigger,omitempty"`
+	Price         float64     `json:"price,omitempty"`
+	StopPrice     float64     `json:"stop_price,omitempty"`
+	Quantity      uint64      `json:"quantity,omitempty"`
+	Side          OrderSide   `json:"side,omitempty"`
+	ExtendedHours bool        `json:"extended_hours,omitempty"`
+	TrailingPeg   TrailingPeg `json:"trailing_peg,omitempty"`
 
 	OverrideDayTradeChecks bool `json:"override_day_trade_checks,omitempty"`
 	OverrideDtbpChecks     bool `json:"override_dtbp_checks,omitempty"`
@@ -85,6 +95,16 @@ func (c *Client) Order(i *Instrument, o OrderOpts) (*OrderOutput, error) {
 
 	if o.Stop {
 		a.StopPrice = o.Price
+		a.Trigger = "stop"
+	}
+
+	// for now we only support Percentage
+	// Trailing stop not for extended hours
+	if strings.ToLower(o.TrailingPeg.Type) == "percentage" {
+		a.TrailingPeg.Type = "percentage"
+		a.TrailingPeg.Percentage = o.TrailingPeg.Percentage
+
+		a.StopPrice = o.StopPrice
 		a.Trigger = "stop"
 	}
 
