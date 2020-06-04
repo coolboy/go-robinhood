@@ -99,14 +99,13 @@ func (c *Client) Order(i *Instrument, o OrderOpts) (*OrderOutput, error) {
 	}
 
 	// for now we only support Percentage
+	// Trailing stop not for extended hours
 	if strings.ToLower(o.TrailingPeg.Type) == "percentage" {
 		a.TrailingPeg.Type = "percentage"
 		a.TrailingPeg.Percentage = o.TrailingPeg.Percentage
 
 		a.StopPrice = o.StopPrice
 		a.Trigger = "stop"
-
-		a.ExtendedHours = false // Trailing stop not for extended hours
 	}
 
 	bs, err := json.Marshal(a)
