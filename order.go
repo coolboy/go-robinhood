@@ -61,18 +61,18 @@ type TrailingPeg struct {
 }
 
 type apiOrder struct {
-	Account       string      `json:"account,omitempty"`
-	Instrument    string      `json:"instrument,omitempty"`
-	Symbol        string      `json:"symbol,omitempty"`
-	Type          string      `json:"type,omitempty"`
-	TimeInForce   string      `json:"time_in_force,omitempty"`
-	Trigger       string      `json:"trigger,omitempty"`
-	Price         float64     `json:"price,omitempty"`
-	StopPrice     float64     `json:"stop_price,omitempty"`
-	Quantity      uint64      `json:"quantity,omitempty"`
-	Side          OrderSide   `json:"side,omitempty"`
-	ExtendedHours bool        `json:"extended_hours,omitempty"`
-	TrailingPeg   TrailingPeg `json:"trailing_peg,omitempty"`
+	Account       string       `json:"account,omitempty"`
+	Instrument    string       `json:"instrument,omitempty"`
+	Symbol        string       `json:"symbol,omitempty"`
+	Type          string       `json:"type,omitempty"`
+	TimeInForce   string       `json:"time_in_force,omitempty"`
+	Trigger       string       `json:"trigger,omitempty"`
+	Price         float64      `json:"price,omitempty"`
+	StopPrice     float64      `json:"stop_price,omitempty"`
+	Quantity      uint64       `json:"quantity,omitempty"`
+	Side          OrderSide    `json:"side,omitempty"`
+	ExtendedHours bool         `json:"extended_hours,omitempty"`
+	TrailingPeg   *TrailingPeg `json:"trailing_peg,omitempty"`
 
 	OverrideDayTradeChecks bool `json:"override_day_trade_checks,omitempty"`
 	OverrideDtbpChecks     bool `json:"override_dtbp_checks,omitempty"`
@@ -101,8 +101,10 @@ func (c *Client) Order(i *Instrument, o OrderOpts) (*OrderOutput, error) {
 	// for now we only support Percentage
 	// Trailing stop not for extended hours
 	if strings.ToLower(o.TrailingPeg.Type) == "percentage" {
-		a.TrailingPeg.Type = "percentage"
-		a.TrailingPeg.Percentage = o.TrailingPeg.Percentage
+		a.TrailingPeg = &TrailingPeg{
+			Type:       "percentage",
+			Percentage: o.TrailingPeg.Percentage,
+		}
 
 		a.StopPrice = o.StopPrice
 		a.Trigger = "stop"
